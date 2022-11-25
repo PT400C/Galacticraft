@@ -23,6 +23,12 @@ public abstract class PlayerControllerMPMixin {
     @Final
     private NetHandlerPlayClient netClientHandler;
 
+    /**
+     * @author micdoodle8
+     * @author SinTh0r4s
+     * @author glowredman
+     * @reason enable custom Galacticraft dimension behaviour
+     */
     @Overwrite
     public EntityClientPlayerMP func_147493_a(World world, StatFileWriter stats) {
         return new GCEntityClientPlayerMP(this.mc, world, this.mc.getSession(), this.netClientHandler, stats);

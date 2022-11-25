@@ -21,11 +21,7 @@ public class ChunkProviderServerMixin {
             method = "populate(Lnet/minecraft/world/chunk/IChunkProvider;II)V",
             require = 1)
     private boolean checkOtherModPreventGenerate(
-            int chunkX,
-            int chunkZ,
-            World world,
-            IChunkProvider chunkProvider,
-            IChunkProvider chunkGenerator) {
+            int chunkX, int chunkZ, World world, IChunkProvider chunkProvider, IChunkProvider chunkGenerator) {
         return !WorldUtil.otherModPreventGenerate(chunkX, chunkZ, world, chunkGenerator, chunkProvider);
     }
 }
