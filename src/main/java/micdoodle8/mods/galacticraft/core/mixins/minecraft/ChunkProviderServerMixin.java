@@ -18,7 +18,8 @@ public class ChunkProviderServerMixin {
                             target =
                                     "Lcpw/mods/fml/common/registry/GameRegistry;generateWorld(IILnet/minecraft/world/World;Lnet/minecraft/world/chunk/IChunkProvider;Lnet/minecraft/world/chunk/IChunkProvider;)V",
                             value = "INVOKE"),
-            method = "populate(Lnet/minecraft/world/chunk/IChunkProvider;II)V",
+            method = "func_73153_a(Lnet/minecraft/world/chunk/IChunkProvider;II)V", // populate
+            remap = false,
             require = 1)
     private boolean checkOtherModPreventGenerate(
             int chunkX, int chunkZ, World world, IChunkProvider chunkProvider, IChunkProvider chunkGenerator) {
