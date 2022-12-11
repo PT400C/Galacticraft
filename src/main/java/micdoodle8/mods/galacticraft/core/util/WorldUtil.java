@@ -613,7 +613,9 @@ public class WorldUtil {
     public static void unregisterSpaceStations() {
         if (WorldUtil.registeredSpaceStations != null) {
             for (final Integer registeredID : WorldUtil.registeredSpaceStations.keySet()) {
-                DimensionManager.unregisterDimension(registeredID);
+                if (DimensionManager.isDimensionRegistered(registeredID)) {
+                    DimensionManager.unregisterDimension(registeredID);
+                }
             }
 
             WorldUtil.registeredSpaceStations = null;
@@ -755,10 +757,10 @@ public class WorldUtil {
     public static void unregisterPlanets() {
         if (WorldUtil.registeredPlanets != null) {
             for (final Integer var1 : WorldUtil.registeredPlanets) {
-                try {
+                if (DimensionManager.isDimensionRegistered(var1)) {
                     DimensionManager.unregisterDimension(var1);
                     GCLog.info("Unregistered Dimension: " + var1);
-                } catch (final IllegalArgumentException e) {
+                } else {
                     GCLog.info("Unregistered Dimension: " + var1 + " - already unregistered");
                 }
             }
@@ -1318,7 +1320,9 @@ public class WorldUtil {
             }
             if (WorldUtil.registeredPlanets != null) {
                 for (final Integer registeredID : WorldUtil.registeredPlanets) {
-                    DimensionManager.unregisterDimension(registeredID);
+                    if (DimensionManager.isDimensionRegistered(registeredID)) {
+                        DimensionManager.unregisterDimension(registeredID);
+                    }
                 }
             }
             WorldUtil.registeredPlanets = new ArrayList<>();
@@ -1391,7 +1395,9 @@ public class WorldUtil {
         try {
             if (WorldUtil.registeredSpaceStations != null) {
                 for (final Integer registeredID : WorldUtil.registeredSpaceStations.keySet()) {
-                    DimensionManager.unregisterDimension(registeredID);
+                    if (DimensionManager.isDimensionRegistered(registeredID)) {
+                        DimensionManager.unregisterDimension(registeredID);
+                    }
                 }
             }
             WorldUtil.registeredSpaceStations = Maps.newHashMap();
