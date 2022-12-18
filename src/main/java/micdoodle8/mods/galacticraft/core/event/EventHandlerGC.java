@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.event;
 
+import codechicken.nei.recipe.StackInfo;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.Event;
@@ -24,6 +25,7 @@ import micdoodle8.mods.galacticraft.api.item.IKeyable;
 import micdoodle8.mods.galacticraft.api.prefab.entity.EntityAutoRocket;
 import micdoodle8.mods.galacticraft.api.prefab.entity.EntitySpaceshipBase;
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicPage;
+import micdoodle8.mods.galacticraft.api.recipe.RocketFuelRecipe;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.FlipPage;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.Unlock;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry;
@@ -76,6 +78,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -90,6 +93,7 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent.SummonAidEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
@@ -97,6 +101,7 @@ import net.minecraftforge.event.terraingen.TerrainGen;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent.Load;
 import net.minecraftforge.event.world.WorldEvent.Save;
+import net.minecraftforge.fluids.FluidStack;
 
 public class EventHandlerGC {
     public static Map<Block, Item> bucketList = new HashMap<>();
@@ -918,6 +923,17 @@ public class EventHandlerGC {
                     }
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onItemTooltipEvent(ItemTooltipEvent event) {
+        FluidStack fluidStack = StackInfo.getFluid(event.itemStack);
+        int fuelTier = RocketFuelRecipe.getfuelMaxTier(fluidStack);
+        if (fuelTier >= 8) {
+            event.toolTip.add(StatCollector.translateToLocal("tooltip.rocket_fuel_tier_max"));
+        } else if (fuelTier != 0) {
+            event.toolTip.add(StatCollector.translateToLocalFormatted("tooltip.rocket_fuel_tier", fuelTier));
         }
     }
 

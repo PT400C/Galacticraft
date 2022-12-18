@@ -245,6 +245,8 @@ galaxy.milkyWay=Milky Way
 # OTHER
 newversion.failed.name=Galacticraft update check failed! Trying again in 15 seconds
 newversion.success.name=Galacticraft remote version found:
+tooltip.rocket_fuel_tier=Can be used as rocket fuel up to tier %s
+tooltip.rocket_fuel_tier_max=Can be used as rocket fuel for all tiers
 
 # KEYBINDINGS
 keybind.map.name=[GC] Galaxy Map
