@@ -1,80 +1,61 @@
 package micdoodle8.mods.galacticraft.core.asm;
 
-import static micdoodle8.mods.galacticraft.core.asm.GCLoadingPlugin.debugOutputDir;
-import static org.objectweb.asm.Opcodes.ASM5;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import static micdoodle8.mods.galacticraft.core.asm.GCLoadingPlugin.isObf;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.TraceClassVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 
-import com.google.common.collect.ImmutableMap;
+/**
+ * This cannot be a mixin, as it'd otherwise break on thermos server
+ * <p>
+ * Scrubs ServerConfigurationManager for new EntityPlayerMP and replace it with new GCEntityPlayerMP
+ */
+public class GCTransformer implements IClassTransformer, Opcodes {
 
-public class GCTransformer implements IClassTransformer {
-
-    private static final boolean DEBUG = Boolean.getBoolean("glease.debugasm");
-    private static final ConcurrentMap<String, Integer> transformCounts = new ConcurrentHashMap<>();
-    private final Map<String, TransformerFactory> transformers = ImmutableMap.<String, TransformerFactory>builder()
-            .put(
-                    "net.minecraft.server.management.ServerConfigurationManager",
-                    new TransformerFactory(ServerConfigurationManagerVisitor::new))
-            .build();
-
-    static void catching(Exception e) {
-        GCLoadingPlugin.LOGGER.fatal("Something went very wrong with class transforming! Aborting!!!", e);
-        throw new RuntimeException("Transforming class", e);
-    }
+    private static final String REPLACEMENT_CLASS_INTERNAL_NAME = "micdoodle8/mods/galacticraft/core/entities/player/GCEntityPlayerMP";
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        final TransformerFactory factory = this.transformers.get(name);
-        if (factory == null || factory.isInactive()) {
-            return basicClass;
+        if ("net.minecraft.server.management.ServerConfigurationManager".equals(transformedName)) {
+            return transform(basicClass);
         }
-        GCLoadingPlugin.LOGGER.info("Transforming class {}", name);
-        final ClassReader cr = new ClassReader(basicClass);
-        final ClassWriter cw = new ClassWriter(factory.isExpandFrames() ? ClassWriter.COMPUTE_FRAMES : 0);
-        // we are very probably the last one to run.
-        byte[] transformedBytes = null;
-        if (DEBUG) {
-            final int curCount = transformCounts.compute(transformedName, (k, v) -> v == null ? 0 : v + 1);
-            final String infix = curCount == 0 ? "" : "_" + curCount;
-            try (PrintWriter origOut = new PrintWriter(new File(debugOutputDir, name + infix + "_orig.txt"), "UTF-8");
-                    PrintWriter tranOut = new PrintWriter(
-                            new File(debugOutputDir, name + infix + "_tran.txt"),
-                            "UTF-8")) {
-                cr.accept(
-                        new TraceClassVisitor(factory.apply(ASM5, new TraceClassVisitor(cw, tranOut)), origOut),
-                        factory.isExpandFrames() ? ClassReader.SKIP_FRAMES : 0);
-                transformedBytes = cw.toByteArray();
-            } catch (final Exception e) {
-                GCLoadingPlugin.LOGGER
-                        .warn("Unable to transform with debug output on. Now retrying without debug output.", e);
+        return basicClass;
+    }
+
+    private static byte[] transform(byte[] basicClass) {
+        final ClassReader classReader = new ClassReader(basicClass);
+        final ClassNode classNode = new ClassNode();
+        classReader.accept(classNode, 0);
+        for (MethodNode mn : classNode.methods) {
+            for (AbstractInsnNode node : mn.instructions.toArray()) {
+                if (isTargetTypeNode(node)) {
+                    ((TypeInsnNode) node).desc = REPLACEMENT_CLASS_INTERNAL_NAME;
+                } else if (isTargetMethodNode(node)) {
+                    ((MethodInsnNode) node).owner = REPLACEMENT_CLASS_INTERNAL_NAME;
+                }
             }
         }
-        if (transformedBytes == null || transformedBytes.length == 0) {
-            try {
-                cr.accept(factory.apply(ASM5, cw), factory.isExpandFrames() ? ClassReader.SKIP_FRAMES : 0);
-                transformedBytes = cw.toByteArray();
-            } catch (final Exception e) {
-                catching(e);
-            }
-        }
-        if (transformedBytes == null || transformedBytes.length == 0) {
-            if (!DEBUG) {
-                GCLoadingPlugin.LOGGER.fatal(
-                        "Null or empty byte array created. Transforming will rollback as a last effort attempt to make things work! However features will not function!");
-                return basicClass;
-            }
-            catching(new RuntimeException("Null or empty byte array created. This will not work well!"));
-        }
-        return transformedBytes;
+        final ClassWriter classWriter = new ClassWriter(0);
+        classNode.accept(classWriter);
+        return classWriter.toByteArray();
+    }
+
+    private static boolean isTargetMethodNode(AbstractInsnNode node) {
+        return node instanceof MethodInsnNode && node.getOpcode() == INVOKESPECIAL
+                && ((MethodInsnNode) node).name.equals("<init>")
+                && ((MethodInsnNode) node).owner.equals(isObf ? "mw" : "net/minecraft/entity/player/EntityPlayerMP");
+    }
+
+    private static boolean isTargetTypeNode(AbstractInsnNode node) {
+        return node instanceof TypeInsnNode && node.getOpcode() == NEW
+                && ((TypeInsnNode) node).desc.equals(isObf ? "mw" : "net/minecraft/entity/player/EntityPlayerMP");
     }
 }

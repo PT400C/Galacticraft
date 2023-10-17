@@ -1,6 +1,5 @@
 package micdoodle8.mods.galacticraft.core.asm;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +14,6 @@ import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.Name;
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin.SortingIndex;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 import micdoodle8.mods.galacticraft.core.Constants;
 import micdoodle8.mods.galacticraft.core.mixins.Mixins;
@@ -26,16 +24,14 @@ import micdoodle8.mods.galacticraft.core.mixins.Mixins;
 @TransformerExclusions("micdoodle8.mods.galacticraft.core.asm")
 @MCVersion("1.7.10")
 @Name(Constants.COREMOD_NAME_SIMPLE)
-@SortingIndex(1500)
 public class GCLoadingPlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static final Logger LOGGER = LogManager.getLogger(Constants.COREMOD_NAME_SIMPLE);
-    static boolean dev;
-    static File debugOutputDir;
+    static boolean isObf;
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] { "micdoodle8.mods.galacticraft.core.asm.GCTransformer" };
+        return new String[] { GCTransformer.class.getName() };
     }
 
     @Override
@@ -50,10 +46,7 @@ public class GCLoadingPlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public void injectData(Map<String, Object> data) {
-        dev = !(boolean) data.get("runtimeDeobfuscationEnabled");
-        debugOutputDir = new File((File) data.get("mcLocation"), ".asm");
-        // noinspection ResultOfMethodCallIgnored
-        debugOutputDir.mkdir();
+        isObf = (boolean) data.get("runtimeDeobfuscationEnabled");
     }
 
     @Override
