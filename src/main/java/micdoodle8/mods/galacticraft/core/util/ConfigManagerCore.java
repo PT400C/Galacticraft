@@ -131,6 +131,9 @@ public class ConfigManagerCore {
     //Kept to ensure backwards-compatibility with certain Galacticraft addons
     public static int keyOverrideFuelLevelI = 0;
 
+    // Kept to ensure backwards-compatibility with certain Galacticraft addons
+    public static int keyOverrideFuelLevelI = 0;
+
     public static ArrayList<Object> clientSave = null;
 
     public static void initialize(File file) {
